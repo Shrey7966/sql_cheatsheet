@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Cheatsheet — Day 1 to Day 4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { background:#0d1117; }
+  body { background:#0d1117; color:#e6edf3; font-family:'Inter',sans-serif; padding:32px 24px; }
+
+  .header { text-align:center; margin-bottom:32px; }
+  .header h1 { font-size:26px; font-weight:800; color:#e6edf3; letter-spacing:-0.5px; }
+  .header h1 span { color:#f78166; }
+  .header p { font-size:12px; color:#8b949e; margin-top:6px; font-family:'JetBrains Mono',monospace; }
+
+  .day-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:5px 12px; border-radius:4px; display:inline-block; margin-bottom:12px; font-family:'JetBrains Mono',monospace; }
+  .day1   { background:#1a3a2a; color:#3fb950; }
+  .day2   { background:#1a2a3a; color:#58a6ff; }
+  .day3   { background:#2a1a3a; color:#bc8cff; }
+  .day4   { background:#3a2510; color:#ffa657; }
+  .extras { background:#2a2a1a; color:#e3b341; }
+  .pat    { background:#3a1a1a; color:#f78166; }
+
+  .section-title { font-size:15px; font-weight:700; color:#e6edf3; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #21262d; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(275px,1fr)); gap:12px; margin-bottom:28px; }
+
+  .card { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:14px 15px; position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .card.green::before  { background:#3fb950; }
+  .card.blue::before   { background:#58a6ff; }
+  .card.purple::before { background:#bc8cff; }
+  .card.orange::before { background:#ffa657; }
+  .card.red::before    { background:#f78166; }
+  .card.yellow::before { background:#e3b341; }
+
+  .card-title { font-size:12px; font-weight:700; color:#e6edf3; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+  .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dot.green  { background:#3fb950; }
+  .dot.blue   { background:#58a6ff; }
+  .dot.purple { background:#bc8cff; }
+  .dot.orange { background:#ffa657; }
+  .dot.red    { background:#f78166; }
+  .dot.yellow { background:#e3b341; }
+
+  .desc { font-size:11px; color:#8b949e; margin-bottom:9px; line-height:1.5; }
+  .code-block { background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:10px 12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; line-height:1.9; overflow-x:auto; color:#e6edf3; }
+  .kw  { color:#ff7b72; }
+  .fn  { color:#d2a8ff; }
+  .str { color:#a5d6ff; }
+  .cm  { color:#6e7681; }
+  .op  { color:#ffa657; }
+  .num { color:#79c0ff; }
+  .ok  { color:#3fb950; }
+  .err { color:#f78166; }
+
+  .tip  { background:#1c2128; border-left:3px solid #e3b341; border-radius:0 5px 5px 0; padding:7px 10px; font-size:10.5px; color:#e3b341; margin-top:9px; font-family:'JetBrains Mono',monospace; line-height:1.5; }
+  .trap { background:#1c2128; border-left:3px solid #f78166; border-radius:0 5px 5px 0; padding:7px 10px; font-size:10.5px; color:#f78166; margin-top:9px; font-family:'JetBrains Mono',monospace; line-height:1.5; }
+
+  .badge { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:20px; margin-left:5px; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px; }
+  .badge.iv   { background:#3a1a1a; color:#f78166; }
+  .badge.trap { background:#3a2a1a; color:#ffa657; }
+
+  .footer { text-align:center; margin-top:28px; font-size:11px; color:#6e7681; font-family:'JetBrains Mono',monospace; border-top:1px solid #21262d; padding-top:16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SQL Cheatsheet <span>— Day 1 to Day 4</span></h1>
+  <p>MySQL · Shreyas · SELECT → JOINs → Subqueries → CTEs → Window Functions</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  DAY 1                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label day1">Day 1 — Foundations</div>
+<div class="section-title">SELECT · Filtering · NULL · Sorting · Date & String Functions</div>
+<div class="grid">
+
+  <div class="card green">
+    <div class="card-title"><div class="dot green"></div>SELECT skeleton</div>
+    <div class="desc">Every query follows this shape. Clause order is fixed.</div>
+    <div class="code-block">
+<span class="kw">SELECT</span>   col1, col2<br>
+<span class="kw">FROM</span>     table_name<br>
+<span class="kw">WHERE</span>    condition<br>
+<span class="kw">GROUP BY</span> col<br>
+<span class="kw">HAVING</span>   agg_condition<br>
+<span class="kw">ORDER BY</span> col <span class="kw">DESC</span><br>
+<span class="kw">LIMIT</span>    <span class="num">10</span> <span class="kw">OFFSET</span> <span class="num">0</span>;
+    </div>
+    <div class="tip">💡 Execution: FROM → WHERE → GROUP → HAVING → SELECT → ORDER → LIMIT</div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title"><div class="dot green"></div>Filtering operators</div>
+    <div class="desc">All WHERE clause operators used regularly in SQL.</div>
+    <div class="code-block">
+<span class="kw">WHERE</span> salary <span class="op">=</span> <span class="num">90000</span><br>
+<span class="kw">WHERE</span> salary <span class="op">!=</span> <span class="num">90000</span>   <span class="cm">-- or &lt;&gt;</span><br>
+<span class="kw">WHERE</span> salary <span class="kw">BETWEEN</span> <span class="num">50000</span> <span class="kw">AND</span> <span class="num">90000</span><br>
+<span class="kw">WHERE</span> dept <span class="kw">IN</span> (<span class="str">'HR'</span>, <span class="str">'Eng'</span>)<br>
+<span class="kw">WHERE</span> dept <span class="kw">NOT IN</span> (<span class="str">'HR'</span>)<br>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="str">'A%'</span>    <span class="cm">-- starts A</span><br>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="str">'%son'</span>  <span class="cm">-- ends son</span><br>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="str">'___'</span>   <span class="cm">-- exactly 3 chars</span>
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>NULL semantics <span class="badge trap">⚠ TRAP</span></div>
+    <div class="desc">NULL = unknown. Comparing to NULL always returns UNKNOWN.</div>
+    <div class="code-block">
+<span class="cm">-- ❌ WRONG — zero rows always</span><br>
+<span class="kw">WHERE</span> salary <span class="op">=</span> <span class="kw">NULL</span><br>
+<span class="kw">WHERE</span> salary <span class="op">!=</span> <span class="kw">NULL</span><br><br>
+<span class="cm">-- ✅ CORRECT</span><br>
+<span class="kw">WHERE</span> salary <span class="kw">IS NULL</span><br>
+<span class="kw">WHERE</span> salary <span class="kw">IS NOT NULL</span><br><br>
+<span class="cm">-- Replace NULL with fallback</span><br>
+<span class="fn">COALESCE</span>(salary, <span class="num">0</span>)<br>
+<span class="fn">NULLIF</span>(a, b)  <span class="cm">-- NULL if a equals b</span>
+    </div>
+    <div class="trap">⚠ WHERE keeps only TRUE. UNKNOWN = row dropped silently.</div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title"><div class="dot green"></div>Top-N pattern <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Get highest or lowest N rows — in every SQL interview.</div>
+    <div class="code-block">
+<span class="cm">-- Highest paid employee</span><br>
+<span class="kw">SELECT</span> name, salary <span class="kw">FROM</span> employees<br>
+<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="num">1</span>;<br><br>
+<span class="cm">-- 2nd and 3rd highest</span><br>
+<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span><br>
+<span class="kw">LIMIT</span> <span class="num">2</span> <span class="kw">OFFSET</span> <span class="num">1</span>;<br><br>
+<span class="cm">-- LIMIT n OFFSET m = skip m, take n</span>
+    </div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title"><div class="dot green"></div>Date functions</div>
+    <div class="desc">Extract parts, calculate gaps, format output.</div>
+    <div class="code-block">
+<span class="fn">YEAR</span>(d) / <span class="fn">MONTH</span>(d) / <span class="fn">DAY</span>(d)<br>
+<span class="fn">QUARTER</span>(d)               <span class="cm">-- 1-4</span><br>
+<span class="fn">WEEKDAY</span>(d)               <span class="cm">-- 0=Mon, 6=Sun</span><br>
+<span class="fn">CURDATE</span>() / <span class="fn">NOW</span>()<br>
+<span class="fn">DATEDIFF</span>(later, earlier)  <span class="cm">-- days gap</span><br>
+<span class="fn">TIMESTAMPDIFF</span>(<span class="str">YEAR</span>,d1,d2) <span class="cm">-- any unit</span><br>
+<span class="fn">DATE_ADD</span>(d,<span class="kw">INTERVAL</span> <span class="num">30</span> <span class="str">DAY</span>)<br>
+<span class="fn">DATE_SUB</span>(d,<span class="kw">INTERVAL</span> <span class="num">1</span> <span class="str">MONTH</span>)<br>
+<span class="fn">LAST_DAY</span>(d)              <span class="cm">-- end of month</span><br>
+<span class="fn">DATE_FORMAT</span>(d,<span class="str">'%M %d, %Y'</span>)
+    </div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title"><div class="dot green"></div>String functions</div>
+    <div class="desc">Manipulate and format text columns.</div>
+    <div class="code-block">
+<span class="fn">CONCAT</span>(first,<span class="str">' '</span>,last)<br>
+<span class="fn">LENGTH</span>(name)<br>
+<span class="fn">UPPER</span>(name) / <span class="fn">LOWER</span>(name)<br>
+<span class="fn">TRIM</span>(<span class="str">'  Alice  '</span>)     <span class="cm">-- 'Alice'</span><br>
+<span class="fn">SUBSTRING</span>(name,<span class="num">1</span>,<span class="num">3</span>)   <span class="cm">-- first 3 chars</span><br>
+<span class="fn">REPLACE</span>(col,<span class="str">'a'</span>,<span class="str">'b'</span>)<br>
+<span class="fn">INSTR</span>(col, <span class="str">'word'</span>)    <span class="cm">-- position of word</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  DDL + DML EXTRAS                           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label extras">Extras — DDL &amp; DML</div>
+<div class="section-title">CREATE · DROP · TRUNCATE · INSERT · UPDATE · DELETE · Constraints · Data Types</div>
+<div class="grid">
+
+  <div class="card yellow">
+    <div class="card-title"><div class="dot yellow"></div>DDL — table structure</div>
+    <div class="desc">Define and modify table structure.</div>
+    <div class="code-block">
+<span class="kw">CREATE TABLE</span> employees (<br>
+  emp_id  <span class="str">INT</span> <span class="kw">PRIMARY KEY</span>,<br>
+  name    <span class="str">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,<br>
+  salary  <span class="str">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),<br>
+  dept_id <span class="str">INT</span><br>
+);<br><br>
+<span class="kw">ALTER TABLE</span> employees <span class="kw">ADD</span> age <span class="str">INT</span>;<br>
+<span class="kw">ALTER TABLE</span> employees <span class="kw">DROP COLUMN</span> age;
+    </div>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-title"><div class="dot yellow"></div>DROP vs TRUNCATE vs DELETE <span class="badge trap">⚠ TRAP</span></div>
+    <div class="desc">Three very different operations — know the difference cold.</div>
+    <div class="code-block">
+<span class="cm">-- DROP: removes table entirely</span><br>
+<span class="kw">DROP TABLE IF EXISTS</span> employees;<br><br>
+<span class="cm">-- TRUNCATE: all rows gone, keeps structure</span><br>
+<span class="cm">-- Faster than DELETE. Resets AUTO_INCREMENT</span><br>
+<span class="kw">TRUNCATE TABLE</span> employees;<br><br>
+<span class="cm">-- DELETE: removes specific rows only</span><br>
+<span class="kw">DELETE FROM</span> employees <span class="kw">WHERE</span> emp_id <span class="op">=</span> <span class="num">5</span>;
+    </div>
+    <div class="trap">⚠ DROP=table gone  TRUNCATE=empty table  DELETE=rows only</div>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-title"><div class="dot yellow"></div>DML — data operations</div>
+    <div class="desc">Insert, update and delete actual rows of data.</div>
+    <div class="code-block">
+<span class="cm">-- Insert multiple rows</span><br>
+<span class="kw">INSERT INTO</span> employees <span class="kw">VALUES</span><br>
+(<span class="num">1</span>, <span class="str">'Alice'</span>, <span class="num">90000</span>, <span class="num">1</span>),<br>
+(<span class="num">2</span>, <span class="str">'Bob'</span>,   <span class="num">60000</span>, <span class="num">2</span>);<br><br>
+<span class="cm">-- Update specific rows</span><br>
+<span class="kw">UPDATE</span> employees<br>
+<span class="kw">SET</span> salary <span class="op">=</span> <span class="num">95000</span><br>
+<span class="kw">WHERE</span> emp_id <span class="op">=</span> <span class="num">1</span>;
+    </div>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-title"><div class="dot yellow"></div>Constraints &amp; data types</div>
+    <div class="desc">Rules enforced at DB level. Common column types.</div>
+    <div class="code-block">
+<span class="kw">PRIMARY KEY</span>   <span class="cm">-- unique + not null</span><br>
+<span class="kw">FOREIGN KEY</span> (col) <span class="kw">REFERENCES</span> t(id)<br>
+<span class="kw">UNIQUE</span>        <span class="cm">-- no duplicates</span><br>
+<span class="kw">NOT NULL</span>      <span class="cm">-- value required</span><br>
+<span class="kw">CHECK</span> (salary <span class="op">></span> <span class="num">0</span>)  <span class="cm">-- custom rule</span><br>
+<span class="kw">DEFAULT</span> <span class="num">0</span>     <span class="cm">-- fallback value</span><br>
+<span class="kw">ON DELETE CASCADE</span> / <span class="kw">RESTRICT</span><br><br>
+<span class="cm">-- Types: INT, DECIMAL(10,2), VARCHAR(255)</span><br>
+<span class="cm">--        TEXT, DATE, DATETIME, TIMESTAMP</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  DAY 2                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label day2">Day 2 — JOINs &amp; Aggregation</div>
+<div class="section-title">JOIN Types · GROUP BY · HAVING · Aggregate Functions · UNION</div>
+<div class="grid">
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>JOIN decision rule</div>
+    <div class="desc">Ask these 4 questions before every JOIN you write.</div>
+    <div class="code-block">
+<span class="cm">1. What do I want in output?</span><br>
+<span class="cm">2. Which tables have that data?</span><br>
+<span class="cm">3. Whose rows must never disappear?</span><br>
+<span class="cm">   → that table goes in FROM (left side)</span><br>
+<span class="cm">4. Are gaps (no match) allowed?</span><br>
+<span class="cm">   YES → LEFT JOIN</span><br>
+<span class="cm">   NO  → INNER JOIN</span><br><br>
+<span class="cm">-- Never write RIGHT JOIN.</span><br>
+<span class="cm">-- Swap table order, use LEFT JOIN.</span>
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>JOIN types + syntax</div>
+    <div class="desc">INNER = overlap only. LEFT = all left + NULLs for no match.</div>
+    <div class="code-block">
+<span class="cm">-- Only matched rows from both sides</span><br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">INNER JOIN</span> dept d <span class="kw">ON</span> e.dept_id <span class="op">=</span> d.id<br><br>
+<span class="cm">-- All left + NULLs where no match</span><br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">LEFT JOIN</span> projects p <span class="kw">USING</span>(emp_id)<br><br>
+<span class="cm">-- Self join: same table, two aliases</span><br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">LEFT JOIN</span> employees m<br>
+  <span class="kw">ON</span> e.manager_id <span class="op">=</span> m.emp_id<br><br>
+<span class="cm">-- USING = same col name in both tables</span><br>
+<span class="cm">-- ON    = different col names</span>
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>Anti-join pattern <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Find rows in A with NO match in B at all.</div>
+    <div class="code-block">
+<span class="cm">-- Employees with NO projects</span><br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">LEFT JOIN</span> projects p <span class="kw">USING</span>(emp_id)<br>
+<span class="kw">WHERE</span> p.project_id <span class="kw">IS NULL</span><br><br>
+<span class="cm">-- Projects with NO employee (flip FROM)</span><br>
+<span class="kw">FROM</span> projects p<br>
+<span class="kw">LEFT JOIN</span> employees e <span class="kw">USING</span>(emp_id)<br>
+<span class="kw">WHERE</span> e.emp_id <span class="kw">IS NULL</span>
+    </div>
+    <div class="tip">💡 Flip FROM table = flip who is the orphan</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>Aggregate functions</div>
+    <div class="desc">Collapse many rows into one summary. NULLs skipped by default.</div>
+    <div class="code-block">
+<span class="fn">COUNT</span>(<span class="op">*</span>)               <span class="cm">-- all rows incl NULLs</span><br>
+<span class="fn">COUNT</span>(salary)         <span class="cm">-- skips NULLs ✅</span><br>
+<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> id)    <span class="cm">-- unique values only</span><br>
+<span class="fn">SUM</span>(salary)<br>
+<span class="fn">AVG</span>(salary)           <span class="cm">-- ignores NULLs</span><br>
+<span class="fn">MIN</span>(salary) / <span class="fn">MAX</span>(salary)<br><br>
+<span class="cm">-- NULL-safe total</span><br>
+<span class="fn">SUM</span>(<span class="fn">COALESCE</span>(salary, <span class="num">0</span>))
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>WHERE vs HAVING <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">WHERE filters raw rows. HAVING filters aggregated groups.</div>
+    <div class="code-block">
+<span class="cm">-- WHERE: filters before grouping</span><br>
+<span class="kw">SELECT</span> dept_id, <span class="fn">AVG</span>(salary)<br>
+<span class="kw">FROM</span> employees<br>
+<span class="kw">WHERE</span> salary <span class="op">></span> <span class="num">60000</span>      <span class="cm">-- raw rows</span><br>
+<span class="kw">GROUP BY</span> dept_id;<br><br>
+<span class="cm">-- HAVING: filters after grouping</span><br>
+<span class="kw">GROUP BY</span> dept_id<br>
+<span class="kw">HAVING</span> <span class="fn">AVG</span>(salary) <span class="op">></span> <span class="num">60000</span>;
+    </div>
+    <div class="tip">💡 Filter uses aggregate? → HAVING. Column filter? → WHERE.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><div class="dot blue"></div>UNION / UNION ALL</div>
+    <div class="desc">Stack two result sets vertically.</div>
+    <div class="code-block">
+<span class="cm">-- Remove duplicates (slower)</span><br>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> table1<br>
+<span class="kw">UNION</span><br>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> table2;<br><br>
+<span class="cm">-- Keep duplicates (faster)</span><br>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> table1<br>
+<span class="kw">UNION ALL</span><br>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> table2;<br><br>
+<span class="cm">-- Same col count + compatible types</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  DAY 3                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label day3">Day 3 — Subqueries &amp; CTEs</div>
+<div class="section-title">Scalar · Correlated · EXISTS · IN · CTEs · Chaining</div>
+<div class="grid">
+
+  <div class="card purple">
+    <div class="card-title"><div class="dot purple"></div>Scalar subquery</div>
+    <div class="desc">Returns exactly ONE value. Used in WHERE, SELECT, or HAVING.</div>
+    <div class="code-block">
+<span class="cm">-- Must return 1 row, 1 column only</span><br>
+<span class="kw">SELECT</span> name, salary<br>
+<span class="kw">FROM</span> employees<br>
+<span class="kw">WHERE</span> salary <span class="op">></span> (<br>
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(salary)<br>
+  <span class="kw">FROM</span> employees<br>
+);<br><br>
+<span class="cm">-- GROUP BY inside = multiple rows = ERROR</span>
+    </div>
+    <div class="trap">⚠ Subquery returns 2+ rows inside WHERE = ERROR always.</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title"><div class="dot purple"></div>Correlated subquery <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Runs once per row. References the outer query column.</div>
+    <div class="code-block">
+<span class="cm">-- Above their OWN department average</span><br>
+<span class="kw">SELECT</span> name, salary<br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">WHERE</span> salary <span class="op">></span> (<br>
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(salary)<br>
+  <span class="kw">FROM</span> employees<br>
+  <span class="kw">WHERE</span> dept_id <span class="op">=</span> e.dept_id <span class="cm">← key line</span><br>
+);<br>
+<span class="cm">-- e.dept_id is the correlation</span>
+    </div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title"><div class="dot purple"></div>IN vs EXISTS <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Both check existence. EXISTS is NULL-safe. Prefer EXISTS.</div>
+    <div class="code-block">
+<span class="cm">-- IN: is value in this list?</span><br>
+<span class="kw">WHERE</span> emp_id <span class="kw">IN</span> (<br>
+  <span class="kw">SELECT</span> emp_id <span class="kw">FROM</span> projects<br>
+  <span class="kw">WHERE</span> emp_id <span class="kw">IS NOT NULL</span> <span class="cm">← safety</span><br>
+)<br><br>
+<span class="cm">-- EXISTS: did any row come back?</span><br>
+<span class="kw">WHERE</span> <span class="kw">EXISTS</span> (<br>
+  <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> projects p<br>
+  <span class="kw">WHERE</span> p.emp_id <span class="op">=</span> e.emp_id <span class="cm">← correlate</span><br>
+)
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>NOT IN NULL trap <span class="badge trap">⚠ TRAP</span></div>
+    <div class="desc">One NULL in subquery list = zero rows returned. Every time.</div>
+    <div class="code-block">
+<span class="cm">-- ❌ DANGEROUS if list has any NULL</span><br>
+<span class="kw">WHERE</span> emp_id <span class="kw">NOT IN</span> (<br>
+  <span class="kw">SELECT</span> emp_id <span class="kw">FROM</span> projects<br>
+)<br><br>
+<span class="cm">-- ✅ SAFE — always add this one line</span><br>
+<span class="kw">WHERE</span> emp_id <span class="kw">NOT IN</span> (<br>
+  <span class="kw">SELECT</span> emp_id <span class="kw">FROM</span> projects<br>
+  <span class="kw">WHERE</span> emp_id <span class="kw">IS NOT NULL</span><br>
+)<br><br>
+<span class="cm">-- Or use NOT EXISTS (always safe)</span>
+    </div>
+    <div class="trap">⚠ NULL in list → UNKNOWN → every row dropped silently.</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title"><div class="dot purple"></div>CTE — WITH clause</div>
+    <div class="desc">Named subquery on top. Makes complex queries readable.</div>
+    <div class="code-block">
+<span class="kw">WITH</span> dept_avg <span class="kw">AS</span> (<br>
+  <span class="kw">SELECT</span> dept_id, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_sal<br>
+  <span class="kw">FROM</span> employees<br>
+  <span class="kw">WHERE</span> dept_id <span class="kw">IS NOT NULL</span><br>
+  <span class="kw">GROUP BY</span> dept_id<br>
+)<br>
+<span class="kw">SELECT</span> e.name, d.avg_sal<br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">JOIN</span> dept_avg d <span class="kw">ON</span> e.dept_id <span class="op">=</span> d.dept_id<br>
+<span class="kw">WHERE</span> e.salary <span class="op">></span> d.avg_sal;
+    </div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title"><div class="dot purple"></div>Chained CTEs</div>
+    <div class="desc">Each CTE builds on previous. One WITH, comma between CTEs.</div>
+    <div class="code-block">
+<span class="kw">WITH</span> cte1 <span class="kw">AS</span> (<br>
+  <span class="kw">SELECT</span> dept_id, <span class="fn">AVG</span>(salary) <span class="kw">AS</span> avg_sal<br>
+  <span class="kw">FROM</span> employees <span class="kw">GROUP BY</span> dept_id<br>
+),<br>
+cte2 <span class="kw">AS</span> (  <span class="cm">-- can use cte1</span><br>
+  <span class="kw">SELECT</span> e.name, c.avg_sal<br>
+  <span class="kw">FROM</span> employees e<br>
+  <span class="kw">JOIN</span> cte1 c <span class="kw">ON</span> e.dept_id <span class="op">=</span> c.dept_id<br>
+)<br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> cte2;
+    </div>
+    <div class="tip">💡 Comma between CTEs. Only ONE WITH keyword total.</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  DAY 4 — NEW                                -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label day4">Day 4 — Window Functions</div>
+<div class="section-title">ROW_NUMBER · RANK · DENSE_RANK · LEAD · LAG · Running Totals · PARTITION BY · NTILE</div>
+<div class="grid">
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>Window function anatomy</div>
+    <div class="desc">Every window function follows this exact structure.</div>
+    <div class="code-block">
+<span class="fn">function_name</span>() <span class="kw">OVER</span> (<br>
+  <span class="kw">PARTITION BY</span> col  <span class="cm">-- like GROUP BY, no collapse</span><br>
+  <span class="kw">ORDER BY</span> col       <span class="cm">-- sort within window</span><br>
+  <span class="kw">ROWS BETWEEN</span> X <span class="kw">AND</span> Y <span class="cm">-- define frame</span><br>
+)<br><br>
+<span class="cm">-- Inside ORDER BY  = HOW function calculates</span><br>
+<span class="cm">-- Outside ORDER BY = HOW results are displayed</span><br>
+<span class="cm">-- They are completely independent</span>
+    </div>
+    <div class="tip">💡 Window functions keep ALL rows — unlike GROUP BY which collapses them.</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>ROW_NUMBER, RANK, DENSE_RANK <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">All three assign numbers to rows. Differ only on ties.</div>
+    <div class="code-block">
+<span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>)<br>
+<span class="cm">-- Always unique. No ties. Use for deduplication.</span><br>
+<span class="cm">-- Ties: Alice=2, Bob=3 (arbitrary order)</span><br><br>
+<span class="fn">RANK</span>() <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>)<br>
+<span class="cm">-- Ties same rank. SKIPS next number.</span><br>
+<span class="cm">-- Ties: Alice=2, Bob=2, next=4 (skips 3)</span><br><br>
+<span class="fn">DENSE_RANK</span>() <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>)<br>
+<span class="cm">-- Ties same rank. NO skip.</span><br>
+<span class="cm">-- Ties: Alice=2, Bob=2, next=3 ✅</span>
+    </div>
+    <div class="tip">💡 Use DENSE_RANK for top-N problems. Never RANK — it skips numbers.</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>Top-N per group — window version <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">LeetCode 185 pattern. DENSE_RANK inside CTE, filter outside.</div>
+    <div class="code-block">
+<span class="cm">-- Top 3 earners per department</span><br>
+<span class="kw">WITH</span> ranked <span class="kw">AS</span> (<br>
+  <span class="kw">SELECT</span> name, dept_id, salary,<br>
+  <span class="fn">DENSE_RANK</span>() <span class="kw">OVER</span> (<br>
+    <span class="kw">PARTITION BY</span> dept_id<br>
+    <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span><br>
+  ) <span class="kw">AS</span> rnk<br>
+  <span class="kw">FROM</span> employees<br>
+  <span class="kw">WHERE</span> salary <span class="kw">IS NOT NULL</span><br>
+)<br>
+<span class="kw">SELECT</span> name, dept_id, salary<br>
+<span class="kw">FROM</span> ranked <span class="kw">WHERE</span> rnk <span class="op">&lt;=</span> <span class="num">3</span>;
+    </div>
+    <div class="trap">⚠ Cannot use window function alias in WHERE directly — always wrap in CTE first.</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>LEAD &amp; LAG <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Look at the next or previous row without a self join.</div>
+    <div class="code-block">
+<span class="fn">LAG</span>(salary, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> hire_date)<br>
+<span class="cm">-- salary of previous row (1 row behind)</span><br>
+<span class="cm">-- first row gets NULL automatically</span><br><br>
+<span class="fn">LEAD</span>(salary, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> hire_date)<br>
+<span class="cm">-- salary of next row (1 row ahead)</span><br>
+<span class="cm">-- last row gets NULL automatically</span><br><br>
+<span class="cm">-- Always wrap in CTE to filter:</span><br>
+<span class="kw">WITH</span> cte <span class="kw">AS</span> (<span class="kw">SELECT</span> ..., <span class="fn">LAG</span>(salary,<span class="num">1</span>) <span class="kw">OVER</span>(...) <span class="kw">AS</span> prev)<br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> cte <span class="kw">WHERE</span> salary <span class="op">></span> prev;
+    </div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>Running total &amp; moving average</div>
+    <div class="desc">Use frame clause to define which rows to include in calculation.</div>
+    <div class="code-block">
+<span class="cm">-- Running total (cumulative sum)</span><br>
+<span class="fn">SUM</span>(salary) <span class="kw">OVER</span> (<br>
+  <span class="kw">ORDER BY</span> hire_date<br>
+  <span class="kw">ROWS BETWEEN</span> UNBOUNDED PRECEDING <span class="kw">AND</span> CURRENT ROW<br>
+)<br><br>
+<span class="cm">-- 3-row moving average</span><br>
+<span class="fn">AVG</span>(salary) <span class="kw">OVER</span> (<br>
+  <span class="kw">ORDER BY</span> hire_date<br>
+  <span class="kw">ROWS BETWEEN</span> <span class="num">2</span> PRECEDING <span class="kw">AND</span> CURRENT ROW<br>
+)
+    </div>
+    <div class="tip">💡 Frame options: UNBOUNDED PRECEDING · n PRECEDING · CURRENT ROW · n FOLLOWING · UNBOUNDED FOLLOWING</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>AVG / SUM with PARTITION BY</div>
+    <div class="desc">Aggregate window functions — ORDER BY changes the meaning.</div>
+    <div class="code-block">
+<span class="cm">-- Full dept average (NO ORDER BY)</span><br>
+<span class="fn">AVG</span>(salary) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> dept_id)<br>
+<span class="cm">-- Every row in dept gets same avg ✅</span><br><br>
+<span class="cm">-- Running dept average (WITH ORDER BY)</span><br>
+<span class="fn">AVG</span>(salary) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> dept_id <span class="kw">ORDER BY</span> salary)<br>
+<span class="cm">-- Each row gets different running avg ⚠</span><br><br>
+<span class="cm">-- Dept running total (resets per dept)</span><br>
+<span class="fn">SUM</span>(salary) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> dept_id <span class="kw">ORDER BY</span> salary)
+    </div>
+    <div class="trap">⚠ AVG() OVER (PARTITION BY x ORDER BY y) = running avg, NOT full avg.</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>NTILE, FIRST_VALUE, LAST_VALUE</div>
+    <div class="desc">Divide into buckets, or fetch boundary values within a window.</div>
+    <div class="code-block">
+<span class="cm">-- Divide into N equal buckets</span><br>
+<span class="fn">NTILE</span>(<span class="num">3</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>)<br>
+<span class="cm">-- 1=top tier  2=mid  3=bottom tier</span><br><br>
+<span class="cm">-- Highest salary in each dept (per row)</span><br>
+<span class="fn">FIRST_VALUE</span>(salary) <span class="kw">OVER</span> (<br>
+  <span class="kw">PARTITION BY</span> dept_id<br>
+  <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span><br>
+)<br><br>
+<span class="cm">-- LAST_VALUE needs explicit frame:</span><br>
+<span class="fn">LAST_VALUE</span>(salary) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> dept_id<br>
+  <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span><br>
+  <span class="kw">ROWS BETWEEN</span> UNBOUNDED PRECEDING <span class="kw">AND</span> UNBOUNDED FOLLOWING)
+    </div>
+    <div class="trap">⚠ LAST_VALUE without explicit frame = wrong result. Always add ROWS BETWEEN.</div>
+  </div>
+
+  <div class="card orange">
+    <div class="card-title"><div class="dot orange"></div>Window function quick reference</div>
+    <div class="desc">All window functions at a glance with their use cases.</div>
+    <div class="code-block">
+<span class="fn">ROW_NUMBER</span>()   <span class="cm">-- unique row num, no ties</span><br>
+<span class="fn">RANK</span>()          <span class="cm">-- ties same, skips next</span><br>
+<span class="fn">DENSE_RANK</span>()    <span class="cm">-- ties same, no skip ✅</span><br>
+<span class="fn">LEAD</span>(col, n)    <span class="cm">-- n rows ahead</span><br>
+<span class="fn">LAG</span>(col, n)     <span class="cm">-- n rows behind</span><br>
+<span class="fn">FIRST_VALUE</span>(col) <span class="cm">-- first in window</span><br>
+<span class="fn">LAST_VALUE</span>(col)  <span class="cm">-- last in window</span><br>
+<span class="fn">NTILE</span>(n)        <span class="cm">-- divide into n buckets</span><br>
+<span class="fn">SUM / AVG / MIN / MAX</span>() <span class="kw">OVER</span>() <span class="cm">-- aggregates</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  INTERVIEW PATTERNS                         -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="day-label pat">Interview Patterns — Day 1 to Day 4</div>
+<div class="section-title">Templates that appear in every SQL interview</div>
+<div class="grid">
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>Top-N per group (CTE version) <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Highest/lowest per department. Always TWO join conditions.</div>
+    <div class="code-block">
+<span class="kw">WITH</span> grp_max <span class="kw">AS</span> (<br>
+  <span class="kw">SELECT</span> dept_id, <span class="fn">MAX</span>(salary) <span class="kw">AS</span> max_sal<br>
+  <span class="kw">FROM</span> employees <span class="kw">GROUP BY</span> dept_id<br>
+)<br>
+<span class="kw">SELECT</span> e.name, e.salary<br>
+<span class="kw">FROM</span> employees e<br>
+<span class="kw">JOIN</span> grp_max g<br>
+  <span class="kw">ON</span>  e.dept_id <span class="op">=</span> g.dept_id  <span class="cm">← group</span><br>
+  <span class="kw">AND</span> e.salary  <span class="op">=</span> g.max_sal; <span class="cm">← value</span>
+    </div>
+    <div class="tip">💡 Two ON conditions always: match the group + match the value.</div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>Second highest salary <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Returns NULL automatically if second highest does not exist.</div>
+    <div class="code-block">
+<span class="kw">SELECT</span> (<br>
+  <span class="kw">SELECT DISTINCT</span> salary<br>
+  <span class="kw">FROM</span> employees<br>
+  <span class="kw">WHERE</span> salary <span class="kw">IS NOT NULL</span><br>
+  <span class="kw">ORDER BY</span> salary <span class="kw">DESC</span><br>
+  <span class="kw">LIMIT</span> <span class="num">1</span> <span class="kw">OFFSET</span> <span class="num">1</span><br>
+) <span class="kw">AS</span> second_highest;<br><br>
+<span class="cm">-- Outer SELECT returns NULL if inner empty</span>
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>Every / All pattern <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">"Every employee earns above X" — flip to "no one fails".</div>
+    <div class="code-block">
+<span class="cm">-- "Every employee earns > 60000"</span><br>
+<span class="cm">-- = "No employee earns ≤ 60000"</span><br><br>
+<span class="kw">SELECT</span> dept_id <span class="kw">FROM</span> employees<br>
+<span class="kw">GROUP BY</span> dept_id<br>
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(<br>
+  <span class="kw">CASE WHEN</span> salary <span class="op">&lt;=</span> <span class="num">60000</span><br>
+            <span class="kw">OR</span> salary <span class="kw">IS NULL</span><br>
+       <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span><br>
+) <span class="op">=</span> <span class="num">0</span>;
+    </div>
+    <div class="tip">💡 EVERY → flip → NO ONE FAILS → count violators = 0</div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>Date range filter <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Last N days — off-by-one trap catches everyone the first time.</div>
+    <div class="code-block">
+<span class="cm">-- Last 30 days INCLUSIVE</span><br>
+<span class="kw">WHERE</span> activity_date <span class="kw">BETWEEN</span><br>
+  <span class="fn">DATE_SUB</span>(<span class="str">'2019-07-27'</span>, <span class="kw">INTERVAL</span> <span class="num">29</span> <span class="str">DAY</span>)<br>
+  <span class="kw">AND</span> <span class="str">'2019-07-27'</span><br><br>
+<span class="cm">-- N days inclusive  = INTERVAL N-1 DAY</span><br>
+<span class="cm">-- N days exclusive  = INTERVAL N DAY</span>
+    </div>
+    <div class="trap">⚠ 30 days inclusive = INTERVAL 29 DAY not 30.</div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>Employees above own dept avg <span class="badge iv">INTERVIEW</span></div>
+    <div class="desc">Correlated subquery vs window function — two ways to solve.</div>
+    <div class="code-block">
+<span class="cm">-- Way 1: correlated subquery</span><br>
+<span class="kw">WHERE</span> salary <span class="op">></span> (<span class="kw">SELECT</span> <span class="fn">AVG</span>(salary) <span class="kw">FROM</span> employees<br>
+                <span class="kw">WHERE</span> dept_id <span class="op">=</span> e.dept_id)<br><br>
+<span class="cm">-- Way 2: window function (cleaner)</span><br>
+<span class="kw">WITH</span> cte <span class="kw">AS</span> (<br>
+  <span class="kw">SELECT</span> name, salary,<br>
+  <span class="fn">AVG</span>(salary) <span class="kw">OVER</span>(<span class="kw">PARTITION BY</span> dept_id) <span class="kw">AS</span> dept_avg<br>
+  <span class="kw">FROM</span> employees<br>
+)<br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> cte <span class="kw">WHERE</span> salary <span class="op">></span> dept_avg;
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><div class="dot red"></div>NULL trap master list <span class="badge trap">⚠ TRAP</span></div>
+    <div class="desc">Every place NULLs can silently destroy your results.</div>
+    <div class="code-block">
+<span class="err">❌</span> <span class="kw">WHERE</span> col <span class="op">=</span> <span class="kw">NULL</span>       <span class="cm">→ use IS NULL</span><br>
+<span class="err">❌</span> <span class="kw">NOT IN</span> (list w/ NULL)  <span class="cm">→ add IS NOT NULL</span><br>
+<span class="err">❌</span> <span class="fn">COUNT</span>(<span class="op">*</span>) for col values <span class="cm">→ COUNT(col)</span><br>
+<span class="err">❌</span> <span class="fn">SUM</span>(col) with NULLs    <span class="cm">→ COALESCE first</span><br>
+<span class="err">❌</span> <span class="fn">AVG</span>(col) wrong denom   <span class="cm">→ check denominator</span><br>
+<span class="err">❌</span> <span class="kw">ORDER BY</span> with NULLs    <span class="cm">→ NULLs sort first ASC</span><br>
+<span class="err">❌</span> <span class="fn">AVG</span>() <span class="kw">OVER</span>(<span class="kw">PARTITION BY</span> x <span class="kw">ORDER BY</span> y) <span class="cm">→ running avg!</span><br><br>
+<span class="ok">✅</span> Always ask: can this column be NULL?
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  SQL Week · Shreyas · Day 1–4 Complete · Next → Day 5: CASE, Pivoting, Recursive CTEs 🚀
+</div>
+
+</body>
+</html>

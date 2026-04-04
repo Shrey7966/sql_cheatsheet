@@ -9,42 +9,53 @@ USE imdb;
 -- Segment 1:
 
 
+
+
 -- Q1. Find the total number of rows in each table of the schema?
 -- Type your code below:
--- SHOW TABLES;
 
-SELECT TABLE_NAME, TABLE_ROWS FROM information_schema.tables
-WHERE table_schema = "imdb"
-ORDER BY TABLE_ROWS DESC ;
+
+SHOW TABLES;
+
+DESCRIBE movie;
+
+
+SELECT *
+FROM information_schema.tables WHERE table_schema = 'imdb';
+
+SELECT 
+    TABLE_NAME, TABLE_ROWS 
+FROM
+    INFORMATION_SCHEMA.TABLES
+WHERE
+    TABLE_SCHEMA = 'imdb'
+ORDER BY TABLE_ROWS DESC;
+
 
 
 -- Q2. Which columns in the movie table have null values?
 -- Type your code below:
 
+DESCRIBE MOVIE;
+
 SELECT * FROM MOVIE;
 
 SELECT 
-
-	SUM( CASE WHEN ID IS  NULL THEN 1 ELSE 0 END ) AS ID,
-	SUM( CASE WHEN TITLE IS  NULL THEN 1 ELSE 0 END ) AS TITLE,
-	SUM( CASE WHEN YEAR IS NULL THEN 1 ELSE 0 END ) AS YEAR,
-	SUM( CASE WHEN DATE_PUBLISHED IS  NULL THEN 1 ELSE 0 END ) AS DATE_PUBLISHED,
-	SUM( CASE WHEN DURATION IS  NULL THEN 1 ELSE 0 END ) AS DURATION,
-	SUM( CASE WHEN COUNTRY IS  NULL THEN 1 ELSE 0 END ) AS COUNTRY,
-	SUM( CASE WHEN WORLWIDE_GROSS_INCOME IS  NULL THEN 1 ELSE 0 END ) AS WORLWIDE_GROSS_INCOME,
-	SUM( CASE WHEN LANGUAGES IS  NULL THEN 1 ELSE 0 END ) AS LANGUAGES,
-	SUM( CASE WHEN PRODUCTION_COMPANY IS  NULL THEN 1 ELSE 0 END ) AS PRODUCTION_COMPANY
-
+	SUM(CASE WHEN ID IS NULL THEN 1 ELSE 0 END ) AS ID ,
+	SUM(CASE WHEN TITLE IS NULL THEN 1 ELSE 0 END ) AS TITLE,
+	SUM(CASE WHEN YEAR IS NULL THEN 1 ELSE 0 END ) AS YEAR_PUBLISHED,
+	SUM(CASE WHEN DATE_PUBLISHED IS NULL THEN 1 ELSE 0 END ) AS DATE_PUBLISHED,
+	SUM(CASE WHEN DURATION IS NULL THEN 1 ELSE 0 END ) AS DURATION,
+	SUM(CASE WHEN COUNTRY IS NULL THEN 1 ELSE 0 END ) AS COUNTRY,
+	SUM(CASE WHEN WORLWIDE_GROSS_INCOME IS NULL THEN 1 ELSE 0 END ) AS WORLWIDE_GROSS_INCOME,
+	SUM(CASE WHEN LANGUAGES IS NULL THEN 1 ELSE 0 END ) AS LANGUAGES,
+	SUM(CASE WHEN PRODUCTION_COMPANY IS NULL THEN 1 ELSE 0 END ) AS PRODUCTION_COMPANY
 FROM MOVIE;
-
-
-
-
-
 
 
 -- Now as you can see four columns of the movie table has null values. Let's look at the at the movies released each year. 
 -- Q3. Find the total number of movies released each year? How does the trend look month wise? (Output expected)
+
 
 /* Output format for the first part:
 
@@ -67,14 +78,23 @@ Output format for the second part of the question:
 +---------------+-------------------+ */
 -- Type your code below:
 
+SELECT 
+	YEAR, COUNT(ID) AS NUMBER_OF_MOVIES
+FROM MOVIE
+GROUP BY YEAR;
+
+SELECT 
+	MONTH(DATE_PUBLISHED) AS MONTH_PUBLISHED, COUNT(ID) AS NUMBER_OF_MOVIES
+FROM MOVIE
+GROUP BY MONTH_PUBLISHED
+ORDER BY MONTH_PUBLISHED ASC ;
 
 
-
-
-
-
-
-
+SELECT 
+	MONTH(DATE_PUBLISHED) AS MONTH_PUBLISHED, COUNT(ID) AS NUMBER_OF_MOVIES
+FROM MOVIE
+GROUP BY MONTH_PUBLISHED
+ORDER BY NUMBER_OF_MOVIES DESC ;
 
 /*The highest number of movies is produced in the month of March.
 So, now that you have understood the month-wise trend of movies, let’s take a look at the other details in the movies table. 
@@ -83,13 +103,21 @@ We know USA and India produces huge number of movies each year. Lets find the nu
 -- Q4. How many movies were produced in the USA or India in the year 2019??
 -- Type your code below:
 
+SELECT COUNTRY, COUNT(ID) AS NUMBER_OF_MOVIES FROM 
+MOVIE WHERE COUNTRY IN ( "India", "USA") AND YEAR = 2019
+GROUP BY COUNTRY
+ORDER BY NUMBER_OF_MOVIES DESC ;
 
 
-
-
-
-
-
+SELECT 
+    COUNTRY, COUNT(*) AS number_of_movies
+FROM
+    movie
+WHERE
+	year = 2019
+		AND
+   country REGEXP 'USA|India'
+   GROUP BY COUNTRY;
 
 
 /* USA and India produced more than a thousand movies(you know the exact number!) in the year 2019.
@@ -99,13 +127,10 @@ Let’s find out the different genres in the dataset.*/
 -- Q5. Find the unique list of the genres present in the data set?
 -- Type your code below:
 
+	SELECT * FROM MOVIE;
+	SELECT * FROM GENRE;
 
-
-
-
-
-
-
+	SELECT DISTINCT ( GENRE ) AS UNIQUE_GENRE FROM GENRE ;
 
 
 /* So, RSVP Movies plans to make a movie of one of these genres.
@@ -115,14 +140,15 @@ Combining both the movie and genres table can give more interesting insights. */
 -- Q6.Which genre had the highest number of movies produced overall?
 -- Type your code below:
 
-
-
-
-
-
-
-
-
+SELECT 
+GENRE,
+COUNT(M.ID) AS NUMBER_OF_MOVIES
+FROM MOVIE M
+JOIN
+GENRE G
+ON M.ID = G.MOVIE_ID
+GROUP BY GENRE
+ORDER BY NUMBER_OF_MOVIES DESC;
 
 /* So, based on the insight that you just drew, RSVP Movies should focus on the ‘Drama’ genre. 
 But wait, it is too early to decide. A movie can belong to two or more genres. 
@@ -131,13 +157,10 @@ So, let’s find out the count of movies that belong to only one genre.*/
 -- Q7. How many movies belong to only one genre?
 -- Type your code below:
 
+SELECT MOVIE_ID, COUNT(MOVIE_ID) FROM GENRE GROUP BY MOVIE_ID;
 
-
-
-
-
-
-
+SELECT COUNT(ID) AS TOTAL_MOVIES_WITH_1_GENRE FROM MOVIE WHERE ID 
+IN (SELECT MOVIE_ID FROM GENRE GROUP BY MOVIE_ID HAVING COUNT(MOVIE_ID)=1);
 
 
 /* There are more than three thousand movies which has only one genre associated with them.
@@ -159,13 +182,13 @@ Now, let's find out the possible duration of RSVP Movies’ next project.*/
 +---------------+-------------------+ */
 -- Type your code below:
 
-
-
-
-
-
-
-
+SELECT G.GENRE, AVG(ROUND(M.DURATION,2)) AS AVERAGE_DURATION
+FROM MOVIE M
+JOIN GENRE G
+ON
+M.ID = G.MOVIE_ID
+GROUP BY GENRE
+ORDER BY AVERAGE_DURATION DESC;
 
 /* Now you know, movies of genre 'Drama' (produced highest in number in 2019) has the average duration of 106.77 mins.
 Lets find where the movies of genre 'thriller' on the basis of number of movies.*/
@@ -182,21 +205,18 @@ Lets find where the movies of genre 'thriller' on the basis of number of movies.
 +---------------+-------------------+---------------------+*/
 -- Type your code below:
 
-
-
-
-
-
-
-
+SELECT G.GENRE, COUNT(M.ID) AS MOVIE_COUNT, DENSE_RANK() OVER (ORDER BY COUNT(M.ID) DESC ) AS GENRE_RANK 
+FROM MOVIE M
+JOIN GENRE G
+ON M.ID = G.MOVIE_ID
+GROUP BY GENRE
+ORDER BY MOVIE_COUNT DESC;
 
 
 /*Thriller movies is in top 3 among all genres in terms of number of movies
  In the previous segment, you analysed the movies and genres tables. 
  In this segment, you will analyse the ratings table as well.
 To start with lets get the min and max values of different columns in the table*/
-
-
 
 
 -- Segment 2:

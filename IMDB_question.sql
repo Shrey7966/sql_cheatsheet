@@ -8,9 +8,6 @@ USE imdb;
 
 -- Segment 1:
 
-
-
-
 -- Q1. Find the total number of rows in each table of the schema?
 -- Type your code below:
 
@@ -222,8 +219,6 @@ To start with lets get the min and max values of different columns in the table*
 -- Segment 2:
 
 
-
-
 -- Q10.  Find the minimum and maximum values in  each column of the ratings table except the movie_id column?
 /* Output format:
 +---------------+-------------------+---------------------+----------------------+-----------------+-----------------+
@@ -233,12 +228,18 @@ To start with lets get the min and max values of different columns in the table*
 +---------------+-------------------+---------------------+----------------------+-----------------+-----------------+*/
 -- Type your code below:
 
+SELECT * FROM RATINGS;
 
+SELECT 
+	MIN(avg_rating) AS min_avg_rating,
+    MAX(avg_rating) AS max_avg_rating,
+    MIN(total_votes) AS min_total_votes,
+	MAX(total_votes) AS max_total_votes,
+    MIN(median_rating) AS min_median_rating,
+    MAX(median_rating) AS max_median_rating
+FROM
+RATINGS;
 
-
-
-
-    
 
 /* So, the minimum and maximum values in each column of the ratings table are in the expected range. 
 This implies there are no outliers in the table. 
@@ -257,11 +258,14 @@ Now, let’s find out the top 10 movies based on average rating.*/
 -- Type your code below:
 -- Keep in mind that multiple movies can be at the same rank. You only have to find out the top 10 movies (if there are more than one movies at the 10th place, consider them all.)
 
-
-
-
-
-
+WITH RES AS(
+SELECT M.TITLE, R.AVG_RATING, DENSE_RANK() OVER ( ORDER BY R.AVG_RATING DESC) AS MOVIE_RANK
+FROM
+MOVIE M
+JOIN
+RATINGS R
+ON M.ID = R.MOVIE_ID)
+SELECT * FROM RES WHERE MOVIE_RANK<=10;
 
 
 /* Do you find you favourite movie FAN in the top 10 movies with an average rating of 9.6? If not, please check your code again!!
@@ -281,14 +285,15 @@ Summarising the ratings table based on the movie counts by median rating can giv
 -- Type your code below:
 -- Order by is good to have
 
-
-
-
-
-
-
-
-
+SELECT * FROM RATINGS;
+	
+SELECT 
+	median_rating,
+    COUNT(movie_id) AS MOVIE_COUNT
+FROM
+	RATINGS
+GROUP BY median_rating
+ORDER BY median_rating ASC;
 
 /* Movies with a median rating of 7 is highest in number. 
 Now, let's find out the production house with which RSVP Movies can partner for its next project.*/
@@ -303,12 +308,12 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 -- Type your code below:
 
 
-
-
-
-
-
-
+SELECT M.production_company, COUNT(ID) AS MOVIE_COUNT , DENSE_RANK() OVER ( ORDER BY COUNT(ID) DESC) AS prod_company_ranK
+FROM MOVIE M
+JOIN RATINGS R
+ON M.ID = R.MOVIE_ID
+WHERE M.production_company IS NOT NULL AND R.AVG_RATING > 8
+GROUP BY M.production_company;
 
 -- It's ok if RANK() or DENSE_RANK() is used too
 -- Answer can be Dream Warrior Pictures or National Theatre Live or both
@@ -325,13 +330,19 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 +---------------+-------------------+ */
 -- Type your code below:
 
-
-
-
-
-
-
-
+SELECT G.GENRE, COUNT(ID) AS MOVIE_COUNT
+FROM MOVIE M
+JOIN 
+GENRE G
+ON 
+M.ID = G.MOVIE_ID
+JOIN
+RATINGS R
+ON
+M.ID = R.MOVIE_ID
+WHERE R.TOTAL_VOTES > 1000 AND M.COUNTRY  LIKE "%USA%"  AND YEAR = 2017 AND MONTH(DATE_PUBLISHED) = 3
+GROUP BY GENRE
+ORDER BY MOVIE_COUNT DESC ;
 
 -- Lets try to analyse with a unique problem statement.
 -- Q15. Find movies of each genre that start with the word ‘The’ and which have an average rating > 8?
@@ -346,24 +357,49 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 +---------------+-------------------+---------------------+*/
 -- Type your code below:
 
+SELECT DISTINCT (M.TITLE) , R.AVG_RATING, G.GENRE
+FROM
+MOVIE M
+JOIN
+RATINGS R
+ON
+M.ID = R.MOVIE_ID
+JOIN 
+GENRE G
+ON
+M.ID = G.MOVIE_ID
+WHERE TITLE LIKE "THE%" AND R.AVG_RATING > 8;
 
-
-
-
-
-
-
+SELECT 
+	m.title,
+    r.avg_rating,
+    g.genre
+FROM
+	movie m
+JOIN
+	genre g
+ON
+	m.id = g.movie_id
+JOIN
+	ratings r
+ON
+	g.movie_id = r.movie_id
+WHERE 
+	title LIKE 'The %' AND r.avg_rating>8
+ORDER BY 
+	r.avg_rating DESC ;
 
 -- You should also try your hand at median rating and check whether the ‘median rating’ column gives any significant insights.
 -- Q16. Of the movies released between 1 April 2018 and 1 April 2019, how many were given a median rating of 8?
 -- Type your code below:
 
-
-
-
-
-
-
+	SELECT COUNT(ID) AS MOVIE_COUNT
+	FROM MOVIE M
+	JOIN 
+	RATINGS R
+	ON
+	M.ID = R.MOVIE_ID
+	WHERE DATE_PUBLISHED BETWEEN "2018/04/01" AND "2019/04/01" AND R.MEDIAN_RATING = 8 ;
 
 
 -- Once again, try to solve the problem given below.
@@ -373,10 +409,25 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 
 
 
-
-
-
-
+SELECT
+CASE
+	-- WHEN languages LIKE '%German%' AND languages LIKE '%Italian%' THEN 'German & Italian'
+	WHEN languages LIKE '%German%' THEN 'German'
+	WHEN languages LIKE '%Italian%' THEN 'Italian'
+END AS lang,
+    SUM(r.total_votes) AS total_votes
+FROM
+    movie m
+JOIN
+    ratings r
+ON
+	m.id = r.movie_id
+WHERE
+    m.languages LIKE '%German%'  OR 
+    m.languages LIKE '%Italian%' 
+    -- (languages LIKE '%German%' AND languages LIKE '%Italian%')
+GROUP BY
+   lang;
 
 -- Answer is Yes
 

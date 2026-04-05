@@ -429,6 +429,8 @@ GROUP BY
 
 -- Answer is Yes
 
+-- German = 4421525 ; Italian = 2003623
+
 /* Now that you have analysed the movies, genres and ratings tables, let us now analyse another table, the names table. 
 Let’s begin by searching for null values in the tables.*/
 

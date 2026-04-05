@@ -357,37 +357,37 @@ ORDER BY MOVIE_COUNT DESC ;
 +---------------+-------------------+---------------------+*/
 -- Type your code below:
 
-SELECT DISTINCT (M.TITLE) , R.AVG_RATING, G.GENRE
-FROM
-MOVIE M
-JOIN
-RATINGS R
-ON
-M.ID = R.MOVIE_ID
-JOIN 
-GENRE G
-ON
-M.ID = G.MOVIE_ID
-WHERE TITLE LIKE "THE%" AND R.AVG_RATING > 8;
+	SELECT DISTINCT (M.TITLE) , R.AVG_RATING, G.GENRE
+	FROM
+	MOVIE M
+	JOIN
+	RATINGS R
+	ON
+	M.ID = R.MOVIE_ID
+	JOIN 
+	GENRE G
+	ON
+	M.ID = G.MOVIE_ID
+	WHERE TITLE LIKE "THE%" AND R.AVG_RATING > 8;
 
-SELECT 
-	m.title,
-    r.avg_rating,
-    g.genre
-FROM
-	movie m
-JOIN
-	genre g
-ON
-	m.id = g.movie_id
-JOIN
-	ratings r
-ON
-	g.movie_id = r.movie_id
-WHERE 
-	title LIKE 'The %' AND r.avg_rating>8
-ORDER BY 
-	r.avg_rating DESC ;
+	SELECT 
+		m.title,
+		r.avg_rating,
+		g.genre
+	FROM
+		movie m
+	JOIN
+		genre g
+	ON
+		m.id = g.movie_id
+	JOIN
+		ratings r
+	ON
+		g.movie_id = r.movie_id
+	WHERE 
+		title LIKE 'The %' AND r.avg_rating>8
+	ORDER BY 
+		r.avg_rating DESC ;
 
 -- You should also try your hand at median rating and check whether the ‘median rating’ column gives any significant insights.
 -- Q16. Of the movies released between 1 April 2018 and 1 April 2019, how many were given a median rating of 8?
@@ -406,8 +406,6 @@ ORDER BY
 -- Q17. Do German movies get more votes than Italian movies? 
 -- Hint: Here you have to find the total number of votes for both German and Italian movies.
 -- Type your code below:
-
-
 
 SELECT
 CASE

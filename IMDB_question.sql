@@ -450,12 +450,33 @@ Let’s begin by searching for null values in the tables.*/
 +---------------+-------------------+---------------------+----------------------+*/
 -- Type your code below:
 
+SELECT * FROM NAMES;
 
+SELECT 
+	SUM(CASE WHEN ID IS NULL THEN 1 ELSE 0 END) AS ID_NULLS,
+	SUM(CASE WHEN NAME IS NULL THEN 1 ELSE 0 END) AS NAME_NULLS,
+	SUM(CASE WHEN HEIGHT IS NULL THEN 1 ELSE 0 END) AS HEIGHT_NULLS,
+	SUM(CASE WHEN DATE_OF_BIRTH IS NULL THEN 1 ELSE 0 END) AS DATE_OF_BIRTH_NULLS,
+	SUM(CASE WHEN KNOWN_FOR_MOVIES IS NULL THEN 1 ELSE 0 END) AS KNOWN_FOR_MOVIES_NULLS
+FROM NAMES;
 
+SELECT 
+    SUM(ID IS NULL) AS ID_NULLS,
+    SUM(NAME IS NULL) AS NAME_NULLS,
+    SUM(HEIGHT IS NULL) AS HEIGHT_NULLS,
+    SUM(DATE_OF_BIRTH IS NULL) AS DATE_OF_BIRTH_NULLS,
+    SUM(KNOWN_FOR_MOVIES IS NULL) AS KNOWN_FOR_MOVIES_NULLS
+FROM NAMES;
 
+SELECT 
+    COUNT(*) - COUNT(ID) AS ID_NULLS,
+    COUNT(*) - COUNT(NAME) AS NAME_NULLS,
+    COUNT(*) - COUNT(HEIGHT) AS HEIGHT_NULLS,
+    COUNT(*) - COUNT(DATE_OF_BIRTH) AS DATE_OF_BIRTH_NULLS,
+    COUNT(*) - COUNT(KNOWN_FOR_MOVIES) AS KNOWN_FOR_MOVIES_NULLS
+FROM NAMES;
 
-
-
+SELECT IF(500<1000, "YES", "NO");
 
 /* There are no Null value in the column 'name'.
 The director is the most important person in a movie crew. 
@@ -473,11 +494,53 @@ Let’s find out the top three directors in the top three genres who can be hire
 |	.			|		.			|
 +---------------+-------------------+ */
 -- Type your code below:
+select * from genre;
+select * from movie;
+select * from ratings;
+select * from director_mapping;
+select * from names;
 
 
 
-
-
+WITH top_rated_genres AS
+(
+SELECT 
+    genre,
+    COUNT(m.id) AS movie_count,
+	RANK () OVER (ORDER BY COUNT(m.id) DESC) AS genre_rank
+FROM
+    genre AS g
+        LEFT JOIN
+    movie AS m 
+		ON g.movie_id = m.id
+			INNER JOIN
+		ratings AS r
+			ON m.id=r.movie_id
+WHERE avg_rating>8
+GROUP BY genre
+)
+SELECT 
+	n.name as director_name,
+	COUNT(distinct(m.id)) AS movie_count
+FROM
+	names AS n
+		INNER JOIN
+	director_mapping AS d
+		ON n.id=d.name_id
+			INNER JOIN
+        movie AS m
+			ON d.movie_id = m.id
+				INNER JOIN
+            ratings AS r
+				ON m.id=r.movie_id
+					INNER JOIN
+						genre AS g
+					ON g.movie_id = m.id
+WHERE g.genre IN (SELECT DISTINCT genre FROM top_rated_genres WHERE genre_rank<=3)
+		AND avg_rating>8
+GROUP BY name
+ORDER BY movie_count DESC
+LIMIT 3;
 
 
 
@@ -497,8 +560,26 @@ Now, let’s find out the top two actors.*/
 -- Type your code below:
 
 
+select * from role_mapping;
 
-
+SELECT 
+	n.name as actor_name,
+	COUNT(m.id) AS movie_count
+FROM
+	names AS n
+		INNER JOIN
+	role_mapping AS a
+		ON n.id=a.name_id
+			INNER JOIN
+        movie AS m
+			ON a.movie_id = m.id
+				INNER JOIN
+            ratings AS r
+				ON m.id=r.movie_id
+WHERE median_rating>=8 AND category = 'actor'
+GROUP BY actor_name
+ORDER BY movie_count DESC
+LIMIT 2;
 
 
 
